@@ -96,6 +96,7 @@ CREATE TABLE client_data (
 -- Table: consents
 CREATE TABLE consents (
     id integer  NOT NULL,
+	mandatory integer NOT NULL,
     title varchar2(25)  NOT NULL,
     document clob  NOT NULL,
     CONSTRAINT consents_pk PRIMARY KEY (id)
@@ -164,6 +165,7 @@ CREATE TABLE status (
 CREATE TABLE transaction (
     id integer  NOT NULL,
     type varchar2(15)  NOT NULL,
+	for_amount char(1) NULL,
     CONSTRAINT transaction_pk PRIMARY KEY (id)
 ) ;
 

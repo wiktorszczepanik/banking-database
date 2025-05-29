@@ -92,26 +92,26 @@ VALUES (3, 'EU', 'EUR', 'Euro');
 
 -- Table: transaction
 
-INSERT INTO transaction (id, type)
-VALUES (1, 'Payment');
+INSERT INTO transaction (id, type, for_amount)
+VALUES (1, 'Payment', NULL);
 
-INSERT INTO transaction (id, type)
-VALUES (2, 'Refund');
+INSERT INTO transaction (id, type, for_amount)
+VALUES (2, 'Refund', '+');
 
-INSERT INTO transaction (id, type)
-VALUES (3, 'Fee');
+INSERT INTO transaction (id, type, for_amount)
+VALUES (3, 'Fee', '-');
 
-INSERT INTO transaction (id, type)
-VALUES (4, 'Interest');
+INSERT INTO transaction (id, type, for_amount)
+VALUES (4, 'Interest', '-');
 
-INSERT INTO transaction (id, type)
-VALUES (5, 'Loan');
+INSERT INTO transaction (id, type, for_amount)
+VALUES (5, 'Loan', '+');
 
-INSERT INTO transaction (id, type)
-VALUES (6, 'Chargeback');
+INSERT INTO transaction (id, type, for_amount)
+VALUES (6, 'Chargeback', '+');
 
-INSERT INTO transaction (id, type)
-VALUES (7, 'Adjustment');
+INSERT INTO transaction (id, type, for_amount)
+VALUES (7, 'Adjustment', NULL);
 
 
 -- Table: account_number_format
@@ -154,14 +154,14 @@ VALUES (5, 89370400440532013001, 2, 2, TO_DATE('2014-02-02 16:05:00', 'YYYY-MM-D
 
 -- Table: consents
 
-INSERT INTO consents (id, title, document)
-VALUES (1, 'Data Proc. Consent', 'I agree to process my data for account management and legal compliance.');
+INSERT INTO consents (id, mandatory, title, document)
+VALUES (1, 1, 'Data Proc. Consent', 'I agree to process my data for account management and legal compliance.');
 
-INSERT INTO consents (id, title, document)
-VALUES (2, 'Marketing Consent', 'I agree to receive promos and updates via email and SMS.');
+INSERT INTO consents (id, mandatory, title, document)
+VALUES (2, 0, 'Marketing Consent', 'I agree to receive promos and updates via email and SMS.');
 
-INSERT INTO consents (id, title, document)
-VALUES (3, '3rd-Party Data Share', 'I agree to share data with third parties for financial services.');
+INSERT INTO consents (id, mandatory, title, document)
+VALUES (3, 1, '3rd-Party Data Share', 'I agree to share data with third parties for financial services.');
 
 
 -- SESSIONS --
