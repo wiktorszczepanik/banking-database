@@ -8,15 +8,15 @@ DECLARE
     accountStatusID INTEGER;
     transactionType INTEGER;
 BEGIN
-    -- Main account status verification -> must be "ACTIVE"
+    -- Main account status verification -> must be "ACTIVE" or "PEND"
     SELECT status_id INTO accountStatusID FROM account
     WHERE account.id = :NEW.account_id;
-    IF accountStatusID <> 1 THEN
-        RAISE_APPLICATION_ERROR(-20100, 'Account status is different from: "active"');
+    IF accountStatusID = 2 THEN -- 2 = "CLOSED"
+        RAISE_APPLICATION_ERROR(-20100, 'Account status cannot be "CLOSED"');
     END IF;
 
     -- Procede rush
-    IF :NEW.rush > 0 THEN
+    IF :NEW.rush <> 0 AND accountStatusID = 1 THEN -- 1 = "ACTIVE"
         -- CALL updateAccountBalance(:NEW.id);
     END IF;
 
@@ -34,43 +34,63 @@ BEGIN
         IF :NEW.transaction_type_id NOT IN transactionType THEN -- Fee, Interest
             RAISE_APPLICATION_ERROR(-20101, 'The transaction type does not match the negative amount');
         END IF;
-    ELSE
+    ELSE -- IF zero
         RAISE_APPLICATION_ERROR(-20102, 'Payment type not available: amount cannot be 0');
     END IF;
 END;
 
-/* Verify is client also active */
--- Cannot insert account if client is deactivated
--- Only possible update with deactivated client is deactivating account
+SELECT * FROM status;
 
-CREATE OR REPLACE TRIGGER verifyIsClientActive
-BEFORE INSERT OR UPDATE
-ON account
+/* Fill account information after mandatory consents */
+
+SELECT * FROM CONSENTS;
+
+CREATE OR REPLACE TRIGGER fillAccountInfoAfterConsents
+AFTER INSERT OR UPDATE
+ON account_consents
 FOR EACH ROW
 DECLARE
-    clientStatus INTEGER;
-BEGIN
-    -- Check is client active
-    SELECT COUNT(*) INTO clientStatus FROM status
-    WHERE status.id = :NEW.client_data_id AND status.name = 'ACTIVE';
+    -- Consents info
+    requiredAccountConsents INTEGER;
+    accountConsents INTEGER;
 
-    IF INSERTING AND clientStatus <> 1 THEN
-        RAISE_APPLICATION_ERROR(-20103, 'Client is not "ACTIVE" in banking system. ' ||
-            'We cannot insert new account under this client');
-    -- Cannot change values other than account status if client is "CLOSED"
-    ELSIF UPDATING AND clientStatus <> 1 THEN
-        IF :NEW.account_number <> :OLD.account_number OR
-           :NEW.account_number_format_id <> :OLD.account_number_format_id OR
-           :NEW.registration_date <> :OLD.registration_date OR
-           :NEW.loyalty_rating <> :OLD.loyalty_rating OR
-           :NEW.client_data_id <> :OLD.client_data_id OR
-           :NEW.available <> :OLD.available OR
-           :NEW.pend <> :OLD.pend OR
-           :NEW.currency_id <> :OLD.currency_id THEN
-            RAISE_APPLICATION_ERROR(-20104, 'Cannot update values other then status to "CLOSED" or "PEND"');
-        ELSIF :NEW.status_id = 1 THEN
-            RAISE_APPLICATION_ERROR(-20105, 'Cannot change account status to "ACTIVE" due to current client status');
+    -- Funds info
+    availableAccountFunds INTEGER; -- When setting up account -> "1000$" for start etc.
+    newID INTEGER;
+    newAccountId INTEGER;
+    newAmount NUMBER(19, 2);
+    newRush SMALLINT := 1;
+    newOperationDate DATE := SYSDATE;
+    newTimestamp TIMESTAMP := SYSDATE;
+    newTransactionTypeId INTEGER;
+    newDescription VARCHAR2(1000);
+    newCurrencyId INTEGER;
+    newCurrencyDate DATE;
+    newOtherAccountNumber INTEGER;
+    newAccountNumberFormatId INTEGER;
+
+
+BEGIN
+    IF INSERTING THEN
+        -- Get number of mandatory consents
+        SELECT COUNT(*) INTO requiredAccountConsents
+        FROM consents WHERE mandatory = 1;
+
+        -- Account consents
+        SELECT COUNT(*) INTO accountConsents
+        FROM account_consents ac
+        INNER JOIN consents c ON ac.consents_id = c.id
+        WHERE ac.client_account_id = :NEW.client_account_id
+        AND c.mandatory = 1;
+
+        IF requiredAccountConsents = accountConsents THEN
+            -- CALL verifyKYC(:NEW.client_account_id);
+            -- Fill financial_log by available funds after setting up account
+
         END IF;
     END IF;
 END;
+
+SELECT * FROM FINANCIAL_LOG;
+
 
