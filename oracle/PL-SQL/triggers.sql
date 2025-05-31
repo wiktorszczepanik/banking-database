@@ -55,10 +55,9 @@ DECLARE
     accountConsents INTEGER;
 
     -- Funds info
-    availableAccountFunds INTEGER; -- When setting up account -> "1000$" for start etc.
-    newID INTEGER;
+    newId INTEGER;
     newAccountId INTEGER;
-    newAmount NUMBER(19, 2);
+    newAmount NUMBER(19, 2); -- When setting up account -> "1000$" for start etc.
     newRush SMALLINT := 1;
     newOperationDate DATE := SYSDATE;
     newTimestamp TIMESTAMP := SYSDATE;
@@ -86,7 +85,16 @@ BEGIN
         IF requiredAccountConsents = accountConsents THEN
             -- CALL verifyKYC(:NEW.client_account_id);
             -- Fill financial_log by available funds after setting up account
-
+            SELECT MAX(id) + 1 INTO newId FROM financial_log;
+            newAccountId := :NEW.client_account_id;
+            SELECT available INTO newAmount FROM account WHERE id = :NEW.client_account_id;
+            newRush := 1;
+            newOperationDate := SYSDATE;
+            newTimestamp := SYSDATE;
+            newTransactionTypeId := 1;
+            newDescription := 'Initial funds for opening new account';
+            SELECT currency_id INTO newCurrencyId FROM account WHERE id = :NEW.client_account_id;
+            
         END IF;
     END IF;
 END;
