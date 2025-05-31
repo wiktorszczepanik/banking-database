@@ -1,3 +1,4 @@
+
 /* Basic check of account before inserting financial record to financial_log */
 
 CREATE OR REPLACE TRIGGER checkBeforeNewFinancialRecord
@@ -30,130 +31,121 @@ BEGIN
         IF :NEW.amount > 0 THEN
             -- Check if the transaction type matches the payment amount
             IF :NEW.transaction_type_id NOT IN (2, 5, 6) THEN -- Refund, Loan, Chargeback
-                RAISE_APPLICATION_ERROR(-20101, 'The transaction type "' || transactionType || '" does not match the positive amount');
+                :NEW.transaction_type_id := 1; -- 1 = "Payment"
+                DBMS_OUTPUT.PUT_LINE('The transaction type "' || transactionType || '" does not match the positive amount. ' ||
+                    'Transaction type is updated to base value "Payment"');
             END IF;
         -- Check "negative" amount
         ELSIF :NEW.amount < 0 THEN
             -- Check if the transaction type matches the payment amount
             IF :NEW.transaction_type_id NOT IN (3, 4) THEN -- Fee, Interest
-                RAISE_APPLICATION_ERROR(-20101, 'The transaction type "' || transactionType || '" does not match the negative amount');
+                :NEW.transaction_type_id := 1; -- 1 = "Payment"
+                DBMS_OUTPUT.PUT_LINE('The transaction type "' || transactionType || '" does not match the negative amount. ' ||
+                    'Transaction type is updated to base value "Payment"');
             END IF;
         ELSE -- IF zero
             RAISE_APPLICATION_ERROR(-20102, 'Payment type not available: amount cannot be 0');
         END IF;
     -- Available to change is only "rush"
     ELSIF UPDATING AND (:OLD.id <> :NEW.id OR
-            :OLD.account_id <> :NEW.account_id OR
-            :OLD.amount <> :NEW.amount OR
-            :OLD.operation_date <> :NEW.operation_date OR
-            :OLD.timestamp <> :NEW.timestamp OR
-            :OLD.transaction_type_id <> :NEW.transaction_type_id OR
-            :OLD.description <> :NEW.description OR
-            :OLD.currency_id <> :NEW.currency_id OR
-            :OLD.currency_date <> :NEW.currency_date OR
-            :OLD.other_account_number <> :NEW.other_account_number OR
-            :OLD.account_number_format_id <> :NEW.account_number_format_id) THEN
+        :OLD.account_id <> :NEW.account_id OR
+        :OLD.amount <> :NEW.amount OR
+        :OLD.operation_date <> :NEW.operation_date OR
+        :OLD.timestamp <> :NEW.timestamp OR
+        :OLD.transaction_type_id <> :NEW.transaction_type_id OR
+        :OLD.description <> :NEW.description OR
+        :OLD.currency_id <> :NEW.currency_id OR
+        :OLD.currency_date <> :NEW.currency_date OR
+        :OLD.other_account_number <> :NEW.other_account_number OR
+        :OLD.account_number_format_id <> :NEW.account_number_format_id) THEN
             RAISE_APPLICATION_ERROR(-20103, 'Cannot update attribute other then "rush"');
     END IF;
 END;
 
 
-/* Fill account information after mandatory consents */
 
-CREATE OR REPLACE TRIGGER fillAccountInfoAfterConsents
-AFTER INSERT OR DELETE OR UPDATE
+/* Check KYC after mandatory consent */
+
+CREATE OR REPLACE TRIGGER checkKYCAfterMandatoryConsents
+AFTER INSERT OR DELETE
 ON account_consents
 FOR EACH ROW
 DECLARE
-    -- Consents info
-    requiredAccountConsents INTEGER;
-    accountConsents INTEGER;
-    isMandatory INTEGER;
-
-    -- Funds info
-    newId INTEGER;
-    newAccountId INTEGER;
-    newAmount NUMBER(19, 2); -- When setting up account -> "1000$" for start etc.
-    newRush SMALLINT := 1;
-    newOperationDate DATE;
-    newTimestamp TIMESTAMP;
-    newTransactionTypeId INTEGER;
-    newDescription VARCHAR2(1000);
-    newCurrencyId INTEGER;
-    newCurrencyDate DATE;
-    newOtherAccountNumber INTEGER;
-    newAccountNumberFormatId INTEGER;
+    -- Data for KYC
+    clientId INTEGER;
+    clientStatus INTEGER;
+    clientBusinessAddress INTEGER;
+    clientLegalAddress INTEGER;
+    accountsPerClient INTEGER;
+    notificationPhone INTEGER;
+    forPend INTEGER;
 BEGIN
     IF INSERTING THEN
-        -- Get number of mandatory consents
-        SELECT COUNT(*) INTO requiredAccountConsents
-        FROM consents WHERE mandatory = 1;
+        IF :NEW.consents_id = 1 THEN -- Data Porc. Consent\
+            forPend := 0;
+            SELECT client_data_id INTO clientId FROM account WHERE id = :NEW.client_account_id;
 
-        -- Account consents
-        SELECT COUNT(*) INTO accountConsents
-        FROM account_consents ac
-        INNER JOIN consents c ON ac.consents_id = c.id
-        WHERE ac.client_account_id = :NEW.client_account_id
-        AND c.mandatory = 1;
+            -- Verify Client status
+            SELECT status_id INTO clientStatus FROM client_data WHERE id = clientId;
+            IF clientStatus <> 1 THEN
+                DBMS_OUTPUT.PUT_LINE('Client must be active');
+                forPend := 1;
+            END IF;
 
-        IF requiredAccountConsents = accountConsents THEN
-            -- CALL verifyKYC(:NEW.client_account_id);
+            -- Client must have Business and Legal address
+            SELECT COUNT(*) INTO clientBusinessAddress
+            FROM address
+            WHERE client_data_id = clientId
+            AND address_type_id = 1;
+            SELECT COUNT(*) INTO clientLegalAddress
+            FROM address
+            WHERE client_data_id = clientId
+            AND address_type_id = 2;
 
-            -- Fill financial_log by available funds after setting up account
-            SELECT MAX(id) + 1 INTO newId FROM financial_log;
-            newAccountId := :NEW.client_account_id;
-            SELECT available INTO newAmount FROM account WHERE id = :NEW.client_account_id;
-            newRush := 0;
-            newOperationDate := SYSDATE;
-            newTimestamp := SYSDATE;
-            newTransactionTypeId := 1;
-            newDescription := 'Initial funds for opening new account';
-            SELECT currency_id INTO newCurrencyId FROM account WHERE id = :NEW.client_account_id;
-            newCurrencyDate := SYSDATE;
-            newOtherAccountNumber := 10020100100000000000000000;
-            newAccountNumberFormatId := 3;
+            IF clientBusinessAddress <> 1 THEN
+                DBMS_OUTPUT.PUT_LINE('Missing Business address for client: ' || clientId);
+                forPend := 1;
+            ELSIF clientLegalAddress <> 1 THEN
+                forPend := 1;
+                DBMS_OUTPUT.PUT_LINE('Missing Legal address for client: ' || clientId);
+            END IF;
 
-            -- Inserting into financial log
-            INSERT INTO financial_log (id, account_id, amount, rush, operation_date, timestamp, transaction_type_id,
-                description, currency_id, currency_date, other_account_number, account_number_format_id)
-            VALUES (newId, newAccountId, newAmount, newRush,
-                newOperationDate, newTimestamp, newTransactionTypeId,
-                newDescription, newCurrencyId, newCurrencyDate, newOtherAccountNumber,
-                newAccountNumberFormatId);
-            DBMS_OUTPUT.PUT_LINE('Initial fund for opening account are added to financial log');
+            -- Notification phone / code required for more than 1 account per client
+
+            -- Number of accounts per client
+            SELECT COUNT(*) INTO accountsPerClient
+            FROM account
+            WHERE client_data_id = clientId;
+
+            -- client notification phone / code
+            SELECT COUNT(*) INTO notificationPhone
+            FROM client_data
+            WHERE id = clientId
+            AND notification_phone_code IS NOT NULL
+            AND notification_phone_number IS NOT NULL;
+
+            -- Error if notification phone / code is missing
+            IF accountsPerClient > 1 AND notificationPhone = 0 THEN
+                forPend := 1;
+                DBMS_OUTPUT.PUT_LINE('Notification phone and notification phone code is required' ||
+                    ' for client with more then 1 account');
+            END IF;
+
+            IF forPend > 0 THEN
+                UPDATE account SET status_id = 3
+                WHERE id = :NEW.client_account_id;
+                DBMS_OUTPUT.PUT_LINE('Account: ' || :NEW.client_account_id || ' is updated to status "PEND"');
+            END IF;
         END IF;
     ELSIF DELETING THEN
-        SELECT COUNT(*) INTO isMandatory
-        FROM account_consents ac
-        INNER JOIN consents c ON ac.consents_id = c.id
-        WHERE ac.client_account_id = :OLD.client_account_id
-        AND c.mandatory = 1;
-        IF isMandatory > 0 THEN
-            RAISE_APPLICATION_ERROR(-20200, 'Cannot delete mandatory consent');
-        ELSE
-            DBMS_OUTPUT.PUT_LINE('Marketing consent was deleted from: ' || :OLD.client_account_id);
+        IF :OLD.consents_id = 1 OR :OLD.consents_id = 3 THEN
+            UPDATE account SET status_id = 3
+            WHERE id = :OLD.client_account_id;
+            DBMS_OUTPUT.PUT_LINE('Account: ' || :OLD.client_account_id || ' is updated to status "PEND". ' ||
+                'Mandatory consents are required for "ACTIVE" account status');
         END IF;
-    ELSE
-        RAISE_APPLICATION_ERROR(-20200, 'Cannot update account_consent. Available are only inserting and deleting.');
     END IF;
 END;
-
-
-SELECT * FROM account_consents;
-
-/* INSERTING test */
-
-
-
-
-
-
-
-
-
-
-
-
 
 -- CALL updateAccountBalance(:NEW.id);
 -- CALL verifyKYC(:NEW.client_account_id);
