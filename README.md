@@ -1,1 +1,1 @@
-# Banking application database
+# Banking SQL database
