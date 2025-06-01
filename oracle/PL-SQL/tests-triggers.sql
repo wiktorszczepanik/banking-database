@@ -75,6 +75,8 @@ VALUES (24, 1, 0, -- Amount is ZERO
 
 
 
+/* "checkKYCAfterMandatoryConsents" - trigger tests */
+
 /* INSERTING test */
     
 -- Invalid Client status
@@ -115,11 +117,3 @@ WHERE client_account_id = 4;
 -- Account: 4 is updated to status "PEND". Mandatory consents are required for "ACTIVE" account status
 -- ...
 
-
-/* Updating account balance based on financial_log */
-
-CALL updateAccountBalance(-1);
-/* INSERT */
-INSERT INTO financial_log (id, account_id, amount, rush, operation_date, timestamp, transaction_type_id, description, currency_id, currency_date, other_account_number, account_number_format_id)
-VALUES (20, 3, 1000, 1, SYSDATE, SYSDATE, 1,'Test description', 1, SYSDATE, 61109010140000071219812875, 1);
--- OUTPUT:
