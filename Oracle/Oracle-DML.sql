@@ -92,26 +92,26 @@ VALUES (3, 'EU', 'EUR', 'Euro');
 
 -- Table: transaction
 
-INSERT INTO transaction (id, type, for_amount)
-VALUES (1, 'Payment', NULL);
+INSERT INTO transaction (id, type)
+VALUES (1, 'Payment');
 
-INSERT INTO transaction (id, type, for_amount)
-VALUES (2, 'Refund', '+');
+INSERT INTO transaction (id, type)
+VALUES (2, 'Refund');
 
-INSERT INTO transaction (id, type, for_amount)
-VALUES (3, 'Fee', '-');
+INSERT INTO transaction (id, type)
+VALUES (3, 'Fee');
 
-INSERT INTO transaction (id, type, for_amount)
-VALUES (4, 'Interest', '-');
+INSERT INTO transaction (id, type)
+VALUES (4, 'Interest');
 
-INSERT INTO transaction (id, type, for_amount)
-VALUES (5, 'Loan', '+');
+INSERT INTO transaction (id, type)
+VALUES (5, 'Loan');
 
-INSERT INTO transaction (id, type, for_amount)
-VALUES (6, 'Chargeback', '+');
+INSERT INTO transaction (id, type)
+VALUES (6, 'Chargeback');
 
-INSERT INTO transaction (id, type, for_amount)
-VALUES (7, 'Adjustment', NULL);
+INSERT INTO transaction (id, type)
+VALUES (7, 'Adjustment');
 
 
 -- Table: account_number_format
