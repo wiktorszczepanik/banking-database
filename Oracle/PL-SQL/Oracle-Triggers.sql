@@ -19,18 +19,12 @@ BEGIN
             RAISE_APPLICATION_ERROR(-20100, 'Account status cannot be "CLOSED"');
         END IF;
 
-        -- Procede rush
-        IF :NEW.rush <> 0 AND accountStatusID = 1 THEN -- 1 = "ACTIVE"
-            -- CALL updateAccountBalance(:NEW.id);
-            DBMS_OUTPUT.PUT_LINE('Account balance updated for id: ' || :NEW.id);
-        END IF;
-
         -- Get transaction type used in INSERT
         SELECT type INTO transactionType FROM transaction WHERE id = :NEW.transaction_type_id;
         -- Check "positive" amount
         IF :NEW.amount > 0 THEN
             -- Check if the transaction type matches the payment amount
-            IF :NEW.transaction_type_id NOT IN (2, 5, 6) THEN -- Refund, Loan, Chargeback
+            IF :NEW.transaction_type_id NOT IN (2, 5, 6, 1) THEN -- Refund, Loan, Chargeback, Payment
                 :NEW.transaction_type_id := 1; -- 1 = "Payment"
                 DBMS_OUTPUT.PUT_LINE('The transaction type "' || transactionType || '" does not match the positive amount. ' ||
                     'Transaction type is updated to base value "Payment"');
@@ -38,7 +32,7 @@ BEGIN
         -- Check "negative" amount
         ELSIF :NEW.amount < 0 THEN
             -- Check if the transaction type matches the payment amount
-            IF :NEW.transaction_type_id NOT IN (3, 4) THEN -- Fee, Interest
+            IF :NEW.transaction_type_id NOT IN (3, 4, 1) THEN -- Fee, Interest, Payment
                 :NEW.transaction_type_id := 1; -- 1 = "Payment"
                 DBMS_OUTPUT.PUT_LINE('The transaction type "' || transactionType || '" does not match the negative amount. ' ||
                     'Transaction type is updated to base value "Payment"');
@@ -88,7 +82,7 @@ BEGIN
             -- Verify Client status
             SELECT status_id INTO clientStatus FROM client_data WHERE id = clientId;
             IF clientStatus <> 1 THEN
-                DBMS_OUTPUT.PUT_LINE('Client must be active');
+				DBMS_OUTPUT.PUT_LINE('Client: ' || clientId || ' -  must be active');
                 forPend := 1;
             END IF;
 
@@ -105,7 +99,8 @@ BEGIN
             IF clientBusinessAddress <> 1 THEN
                 DBMS_OUTPUT.PUT_LINE('Missing Business address for client: ' || clientId);
                 forPend := 1;
-            ELSIF clientLegalAddress <> 1 THEN
+			END IF;
+            IF clientLegalAddress <> 1 THEN
                 forPend := 1;
                 DBMS_OUTPUT.PUT_LINE('Missing Legal address for client: ' || clientId);
             END IF;

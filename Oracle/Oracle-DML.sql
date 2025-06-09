@@ -49,7 +49,7 @@ INSERT INTO client_data (id, first_name, middle_name, last_name, pesel, phone_co
 VALUES (1, 'Jan', 'Krzysztof', 'Kowalski', '12345678901', '48', '600123456', '48', '600654321', 'jan.kowalski@email.com', 1, 2);
 
 INSERT INTO client_data (id, first_name, middle_name, last_name, pesel, phone_code, phone_number, notification_phone_code, notification_phone_number, email, preferred_contact_id, status_id)
-VALUES (2, 'Anna', NULL, 'Nowak', '98765432109', '48', '601234567', '48', '601234567', 'anna.nowak@email.com', 2, 1);
+VALUES (2, 'Anna', NULL, 'Nowak', '98765432109', '48', '601234567', NULL, NULL, 'anna.nowak@email.com', 2, 1);
 
 INSERT INTO client_data (id, first_name, middle_name, last_name, pesel, phone_code, phone_number, notification_phone_code, notification_phone_number, email, preferred_contact_id, status_id)
 VALUES (3, 'Krzysztof', NULL, 'Siennicki', '11122334455', '48', '602345678', '48', '602345678', 'krzysztof.siennicki@email.com', 3, 3);
@@ -64,7 +64,7 @@ INSERT INTO address (id, client_data_id, primary, address_type_id, street, build
 VALUES (2, 2, 1, 2, 'Krakowska', 15, NULL, 2, '31001');
 
 INSERT INTO address (id, client_data_id, primary, address_type_id, street, building_number, apartment_number, city_id, postal_code)
-VALUES (3, 3, 1, 2, 'Gdańska', 21, 8, 3, '80001');
+VALUES (3, 3, 1, 4, 'Gdańska', 21, 8, 3, '80001');
 
 INSERT INTO address (id, client_data_id, primary, address_type_id, street, building_number, apartment_number, city_id, postal_code)
 VALUES (4, 2, 0, 4, 'Poznańska', 15, NULL, 4, '60001');
@@ -74,6 +74,9 @@ VALUES (5, 3, 1, 3, 'Białostocka', 23, 9, 5, '15001');
 
 INSERT INTO address (id, client_data_id, primary, address_type_id, street, building_number, apartment_number, city_id, postal_code)
 VALUES (6, 1, 1, 1, 'Katowicka', 42, 18, 6, '40001');
+
+INSERT INTO address (id, client_data_id, primary, address_type_id, street, building_number, apartment_number, city_id, postal_code)
+VALUES (7, 2, 1, 1, 'Poznańska', 15, NULL, 4, '60001');
 
 
 -- FOUNDS --
@@ -144,7 +147,7 @@ INSERT INTO account (id, account_number, account_number_format_id, status_id, re
 VALUES (3, 12345678901234567890123456, 3, 3, TO_DATE('2012-01-02 11:30:00', 'YYYY-MM-DD HH24:MI:SS'), 0.75, 3, 1500.00, 0.00, 2);
 
 INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
-VALUES (4, 61109010140000071219812875, 1, 1, TO_DATE('2015-01-01 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), 0.32, 3, 3500.00, 500.00, 2);
+VALUES (4, 61109010140000071219812875, 1, 2, TO_DATE('2015-01-01 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), 0.32, 3, 3500.00, 500.00, 2);
 
 INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
 VALUES (5, 89370400440532013001, 2, 2, TO_DATE('2014-02-02 16:05:00', 'YYYY-MM-DD HH24:MI:SS'), 0.15, 1, 200.00, 50.00, 3);
@@ -187,15 +190,11 @@ INSERT INTO account_consents (consents_id, client_account_id)
 VALUES (3, 1);
 
 INSERT INTO account_consents (consents_id, client_account_id)
-VALUES (1, 2);
-INSERT INTO account_consents (consents_id, client_account_id)
 VALUES (3, 2);
 
 INSERT INTO account_consents (consents_id, client_account_id)
 VALUES (1, 3);
 
-INSERT INTO account_consents (consents_id, client_account_id)
-VALUES (1, 4);
 INSERT INTO account_consents (consents_id, client_account_id)
 VALUES (2, 4);
 INSERT INTO account_consents (consents_id, client_account_id)

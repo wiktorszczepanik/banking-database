@@ -26,18 +26,6 @@ VALUES (16, 5, -- Account is "CLOSED"
 -- ...
 
 
--- INSERTING with rush flag
-INSERT INTO financial_log (id, account_id, amount, rush, operation_date, timestamp, transaction_type_id,
-    description, currency_id, currency_date, other_account_number, account_number_format_id)
-VALUES (20, 1, 100, 1, -- Rush is TRUE
-    SYSDATE, SYSDATE, 1,
-    'Test description', 1, SYSDATE, 61109010140000071219812875, 1);
--- OUTPUT:
--- [2025-05-31 16:51:33] 1 row affected in 153 ms
--- Account balance updated for id: 000
--- ...
-
-
 -- INSERTING with positive amount
 INSERT INTO financial_log (id, account_id, amount, rush, operation_date, timestamp, transaction_type_id,
     description, currency_id, currency_date, other_account_number, account_number_format_id)
@@ -79,40 +67,31 @@ VALUES (24, 1, 0, -- Amount is ZERO
 
 /* INSERTING test */
     
--- Invalid Client status
+-- Invalid Client status, missing business address, missing legal address
 INSERT INTO account_consents (consents_id, client_account_id)
-VALUES (1, 5);
+VALUES (1, 4);
 -- OUTPUT:
--- Client must be active
--- ...
--- Account: 5 is updated to status "PEND"
--- ...
-
-
--- Show missing legal address
-INSERT INTO account_consents (consents_id, client_account_id)
-VALUES (1, 2);
--- OUTPUT:
--- Missing Legal address for client: 2
--- ...
--- Account: 2 is updated to status "PEND"
+-- Client: 3 -  must be active
+-- Missing Business address for client: 3
+-- Missing Legal address for client: 3
+-- Account: 4 is updated to status "PEND"
 -- ...
 
 
 -- Show missing notification data for more than 1 account
 INSERT INTO account_consents (consents_id, client_account_id)
-VALUES (1, 3);
+VALUES (1, 2);
 -- OUTPUT:
 -- Notification phone and notification phone code is required for client with more then 1 account
--- ...
--- Account: 3 is updated to status "PEND"
+-- Account: 2 is updated to status "PEND"
 -- ...
 
 
 /* DELETING test */
 
 DELETE FROM account_consents
-WHERE client_account_id = 4;
+WHERE client_account_id = 4
+AND consents_id = 3;
 -- OUTPUT:
 -- Account: 4 is updated to status "PEND". Mandatory consents are required for "ACTIVE" account status
 -- ...
