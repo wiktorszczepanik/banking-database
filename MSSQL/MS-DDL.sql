@@ -1,15 +1,15 @@
 -- Created by Vertabelo (http://vertabelo.com)
--- Last modification date: 2025-06-11 22:05:32.922
+-- Last modification date: 2025-06-11 23:13:34.604
 
 -- tables
 -- Table: account
 CREATE TABLE account (
-    id int  NOT NULL,
-    account_number int  NOT NULL,
+    id bigint  NOT NULL,
+    account_number bigint  NOT NULL,
     account_number_format_id int  NOT NULL,
     status_id int  NOT NULL,
     registration_date date  NOT NULL,
-    loyalty_rating float(100)  NOT NULL,
+    loyalty_rating decimal(5,2)  NOT NULL,
     client_data_id int  NOT NULL,
     available numeric(19,2)  NOT NULL,
     pend numeric(19,2)  NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE account (
 -- Table: account_consents
 CREATE TABLE account_consents (
     consents_id int  NOT NULL,
-    client_account_id int  NOT NULL,
+    client_account_id bigint  NOT NULL,
     CONSTRAINT account_consents_pk PRIMARY KEY  (consents_id,client_account_id)
 );
 
@@ -123,8 +123,8 @@ CREATE TABLE currency (
 
 -- Table: financial_log
 CREATE TABLE financial_log (
-    id int  NOT NULL,
-    account_id int  NOT NULL,
+    id bigint  NOT NULL,
+    account_id bigint  NOT NULL,
     amount numeric(19,2)  NOT NULL,
     rush smallint  NOT NULL,
     operation_date datetime  NOT NULL,
@@ -133,7 +133,7 @@ CREATE TABLE financial_log (
     description varchar(1000)  NOT NULL,
     currency_id int  NOT NULL,
     currency_date datetime  NOT NULL,
-    other_account_number int  NOT NULL,
+    other_account_number bigint  NOT NULL,
     account_number_format_id int  NOT NULL,
     CONSTRAINT financial_log_pk PRIMARY KEY  (id)
 );
@@ -148,7 +148,7 @@ CREATE TABLE preferred_contact (
 -- Table: session_history
 CREATE TABLE session_history (
     id int  NOT NULL,
-    client_account_id int  NOT NULL,
+    client_account_id bigint  NOT NULL,
     time_start datetime  NOT NULL,
     ttl int  NOT NULL,
     time_end datetime  NULL,

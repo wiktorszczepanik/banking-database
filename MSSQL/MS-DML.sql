@@ -93,21 +93,20 @@ VALUES (3, 'EU', 'EUR', 'Euro');
 
 -- Table: transaction
 
-INSERT INTO transaction (id, type)
+INSERT INTO [transaction] (id, type)
 VALUES (1, 'Payment');
-INSERT INTO transaction (id, type)
+INSERT INTO [transaction] (id, type)
 VALUES (2, 'Refund');
-INSERT INTO transaction (id, type)
+INSERT INTO [transaction] (id, type)
 VALUES (3, 'Fee');
-INSERT INTO transaction (id, type)
+INSERT INTO [transaction] (id, type)
 VALUES (4, 'Interest');
-INSERT INTO transaction (id, type)
+INSERT INTO [transaction] (id, type)
 VALUES (5, 'Loan');
-INSERT INTO transaction (id, type)
+INSERT INTO [transaction] (id, type)
 VALUES (6, 'Chargeback');
-INSERT INTO transaction (id, type)
+INSERT INTO [transaction] (id, type)
 VALUES (7, 'Adjustment');
-
 
 -- Table: account_number_format
 
@@ -126,19 +125,19 @@ VALUES (5, 'NRB', 'Numer Rachunku Bankowego (Poland)');
 -- Table: account
 
 INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
-VALUES (1, '61109010140000071219812874', 1, 1, '2010-02-11 10:15:00', 0.99, 2, 1000.00, 200.00, 1);
+VALUES (1, 61109010140000071219812874, 1, 1, '2010-02-11 10:15:00', 0.99, 2, 1000.00, 200.00, 1);
 
 INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
-VALUES (2, '89370400440532013000', 2, 1, '2016-03-07 13:45:00', 0.50, 2, 5000.00, 1000.00, 1);
+VALUES (2, 89370400440532013000, 2, 1, '2016-03-07 13:45:00', 0.50, 2, 5000.00, 1000.00, 1);
 
 INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
-VALUES (3, '12345678901234567890123456', 3, 3, '2012-01-02 11:30:00', 0.75, 3, 1500.00, 0.00, 2);
+VALUES (3, 12345678901234567890123456, 3, 3, '2012-01-02 11:30:00', 0.75, 3, 1500.00, 0.00, 2);
 
 INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
-VALUES (4, '61109010140000071219812875', 1, 2, '2015-01-01 14:00:00', 0.32, 3, 3500.00, 500.00, 2);
+VALUES (4, 61109010140000071219812875, 1, 2, '2015-01-01 14:00:00', 0.32, 3, 3500.00, 500.00, 2);
 
 INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
-VALUES (5, '89370400440532013001', 2, 2, '2014-02-02 16:05:00', 0.15, 1, 200.00, 50.00, 3);
+VALUES (5, 89370400440532013001, 2, 2, '2014-02-02 16:05:00', 0.15, 1, 200.00, 50.00, 3);
 
 
 -- CONSENTS --
