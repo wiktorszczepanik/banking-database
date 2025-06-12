@@ -1,6 +1,5 @@
 -- DML
 
--- INFO --
 
 -- Table: status
 
@@ -14,14 +13,6 @@ INSERT INTO status (id, name) VALUES (3, 'PEND');
 INSERT INTO preferred_contact (id, type) VALUES (1, 'EMAIL');
 INSERT INTO preferred_contact (id, type) VALUES (2, 'MAIL');
 INSERT INTO preferred_contact (id, type) VALUES (3, 'PHONE');
-
-
--- Table: address_type
-
-INSERT INTO address_type (id, name) VALUES (1, 'BUSINESS');
-INSERT INTO address_type (id, name) VALUES (2, 'LEGAL');
-INSERT INTO address_type (id, name) VALUES (3, 'SHIPPING');
-INSERT INTO address_type (id, name) VALUES (4, 'MAIL');
 
 
 -- Table: country
@@ -41,6 +32,65 @@ INSERT INTO city (id, nazwa, country_id) VALUES (5, 'Białystok', 1);
 INSERT INTO city (id, nazwa, country_id) VALUES (6, 'Katowice', 1);
 INSERT INTO city (id, nazwa, country_id) VALUES (7, 'Berlin', 2);
 INSERT INTO city (id, nazwa, country_id) VALUES (8, 'New York', 3);
+
+
+-- Table: address_type
+
+INSERT INTO address_type (id, name) VALUES (1, 'BUSINESS');
+INSERT INTO address_type (id, name) VALUES (2, 'LEGAL');
+INSERT INTO address_type (id, name) VALUES (3, 'SHIPPING');
+INSERT INTO address_type (id, name) VALUES (4, 'MAIL');
+
+
+-- Table: account_number_format
+
+INSERT INTO account_number_format (id, abbreviation, type)
+VALUES (1, 'IBAN', 'International Bank Account Number');
+INSERT INTO account_number_format (id, abbreviation, type)
+VALUES (2, 'CC', 'Credit Card Number');
+INSERT INTO account_number_format (id, abbreviation, type)
+VALUES (3, 'ACH', 'Automated Clearing House (USA)');
+INSERT INTO account_number_format (id, abbreviation, type)
+VALUES (4, 'BLZ', 'Bankleitzahl (Germany Bank Code)');
+INSERT INTO account_number_format (id, abbreviation, type)
+VALUES (5, 'NRB', 'Numer Rachunku Bankowego (Poland)');
+
+
+-- Table: currency
+
+INSERT INTO currency (id, currency_2, currency_3, full_format)
+VALUES (1, 'PL', 'PLN', 'Polish Zloty');
+INSERT INTO currency (id, currency_2, currency_3, full_format)
+VALUES (2, 'US', 'USD', 'United States Dollar');
+INSERT INTO currency (id, currency_2, currency_3, full_format)
+VALUES (3, 'EU', 'EUR', 'Euro');
+
+
+-- Table: action_type
+
+INSERT INTO action_type (id, name) VALUES (1, 'Login');
+INSERT INTO action_type (id, name) VALUES (2, 'Logout');
+INSERT INTO action_type (id, name) VALUES (3, 'View balance');
+INSERT INTO action_type (id, name) VALUES (4, 'Transfer funds');
+INSERT INTO action_type (id, name) VALUES (5, 'Update profile');
+
+
+-- Table: transaction
+
+INSERT INTO [transaction] (id, type)
+VALUES (1, 'Payment');
+INSERT INTO [transaction] (id, type)
+VALUES (2, 'Refund');
+INSERT INTO [transaction] (id, type)
+VALUES (3, 'Fee');
+INSERT INTO [transaction] (id, type)
+VALUES (4, 'Interest');
+INSERT INTO [transaction] (id, type)
+VALUES (5, 'Loan');
+INSERT INTO [transaction] (id, type)
+VALUES (6, 'Chargeback');
+INSERT INTO [transaction] (id, type)
+VALUES (7, 'Adjustment');
 
 
 -- Table: client_data
@@ -79,69 +129,6 @@ INSERT INTO address (id, client_data_id, [primary], address_type_id, street, bui
 VALUES (7, 2, 1, 1, 'Poznańska', 15, NULL, 4, '60001');
 
 
--- FOUNDS --
-
--- Table: currency
-
-INSERT INTO currency (id, currency_2, currency_3, full_format)
-VALUES (1, 'PL', 'PLN', 'Polish Zloty');
-INSERT INTO currency (id, currency_2, currency_3, full_format)
-VALUES (2, 'US', 'USD', 'United States Dollar');
-INSERT INTO currency (id, currency_2, currency_3, full_format)
-VALUES (3, 'EU', 'EUR', 'Euro');
-
-
--- Table: transaction
-
-INSERT INTO [transaction] (id, type)
-VALUES (1, 'Payment');
-INSERT INTO [transaction] (id, type)
-VALUES (2, 'Refund');
-INSERT INTO [transaction] (id, type)
-VALUES (3, 'Fee');
-INSERT INTO [transaction] (id, type)
-VALUES (4, 'Interest');
-INSERT INTO [transaction] (id, type)
-VALUES (5, 'Loan');
-INSERT INTO [transaction] (id, type)
-VALUES (6, 'Chargeback');
-INSERT INTO [transaction] (id, type)
-VALUES (7, 'Adjustment');
-
--- Table: account_number_format
-
-INSERT INTO account_number_format (id, abbreviation, type)
-VALUES (1, 'IBAN', 'International Bank Account Number');
-INSERT INTO account_number_format (id, abbreviation, type)
-VALUES (2, 'CC', 'Credit Card Number');
-INSERT INTO account_number_format (id, abbreviation, type)
-VALUES (3, 'ACH', 'Automated Clearing House (USA)');
-INSERT INTO account_number_format (id, abbreviation, type)
-VALUES (4, 'BLZ', 'Bankleitzahl (Germany Bank Code)');
-INSERT INTO account_number_format (id, abbreviation, type)
-VALUES (5, 'NRB', 'Numer Rachunku Bankowego (Poland)');
-
-
--- Table: account
-
-INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
-VALUES (1, 61109010140000071219812874, 1, 1, '2010-02-11 10:15:00', 0.99, 2, 1000.00, 200.00, 1);
-
-INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
-VALUES (2, 89370400440532013000, 2, 1, '2016-03-07 13:45:00', 0.50, 2, 5000.00, 1000.00, 1);
-
-INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
-VALUES (3, 12345678901234567890123456, 3, 3, '2012-01-02 11:30:00', 0.75, 3, 1500.00, 0.00, 2);
-
-INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
-VALUES (4, 61109010140000071219812875, 1, 2, '2015-01-01 14:00:00', 0.32, 3, 3500.00, 500.00, 2);
-
-INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
-VALUES (5, 89370400440532013001, 2, 2, '2014-02-02 16:05:00', 0.15, 1, 200.00, 50.00, 3);
-
-
--- CONSENTS --
-
 -- Table: consents
 
 INSERT INTO consents (id, mandatory, title, document)
@@ -152,17 +139,23 @@ INSERT INTO consents (id, mandatory, title, document)
 VALUES (3, 1, '3rd-Party Data Share', 'I agree to share data with third parties for financial services.');
 
 
--- SESSIONS --
+-- Table: account
 
--- Table: action_type
+INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
+VALUES (1, '61109010140000071219812874', 1, 1, '2010-02-11 10:15:00', 0.99, 2, 1000.00, 200.00, 1);
 
-INSERT INTO action_type (id, name) VALUES (1, 'Login');
-INSERT INTO action_type (id, name) VALUES (2, 'Logout');
-INSERT INTO action_type (id, name) VALUES (3, 'View balance');
-INSERT INTO action_type (id, name) VALUES (4, 'Transfer funds');
-INSERT INTO action_type (id, name) VALUES (5, 'Update profile');
+INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
+VALUES (2, '89370400440532013000', 2, 1, '2016-03-07 13:45:00', 0.50, 2, 5000.00, 1000.00, 1);
 
--- ROOT --
+INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
+VALUES (3, '12345678901234567890123456', 3, 3, '2012-01-02 11:30:00', 0.75, 3, 1500.00, 0.00, 2);
+
+INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
+VALUES (4, '61109010140000071219812875', 1, 2, '2015-01-01 14:00:00', 0.32, 3, 3500.00, 500.00, 2);
+
+INSERT INTO account (id, account_number, account_number_format_id, status_id, registration_date, loyalty_rating, client_data_id, available, pend, currency_id)
+VALUES (5, '89370400440532013001', 2, 2, '2014-02-02 16:05:00', 0.15, 1, 200.00, 50.00, 3);
+
 
 -- Table: account_consents
 

@@ -1,11 +1,11 @@
 -- Created by Vertabelo (http://vertabelo.com)
--- Last modification date: 2025-06-11 23:13:34.604
+-- Last modification date: 2025-06-12 17:05:47.379
 
 -- tables
 -- Table: account
 CREATE TABLE account (
     id bigint  NOT NULL,
-    account_number bigint  NOT NULL,
+    account_number varchar(30)  NOT NULL,
     account_number_format_id int  NOT NULL,
     status_id int  NOT NULL,
     registration_date date  NOT NULL,
@@ -133,7 +133,7 @@ CREATE TABLE financial_log (
     description varchar(1000)  NOT NULL,
     currency_id int  NOT NULL,
     currency_date datetime  NOT NULL,
-    other_account_number bigint  NOT NULL,
+    other_account_number varchar(30)  NOT NULL,
     account_number_format_id int  NOT NULL,
     CONSTRAINT financial_log_pk PRIMARY KEY  (id)
 );
