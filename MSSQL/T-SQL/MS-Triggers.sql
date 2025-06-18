@@ -138,60 +138,63 @@ AS BEGIN
 		-- Only one primary per client is allowed
 		UPDATE address SET [primary] = 0
         FROM address a
-        JOIN inserted i ON a.client_data_id = i.client_data_id
+        INNER JOIN inserted i ON a.client_data_id = i.client_data_id
         WHERE i.[primary] = 1 
 		AND a.id <> i.id 
 		AND a.[primary] = 1;
     END;
 
-    --------------------------------------------------------------------------------
-    -- UPDATE: jeśli zmieniono primary → zresetuj inne
-    --------------------------------------------------------------------------------
+	-- Update
 	ELSE IF EXISTS(SELECT * FROM inserted) AND EXISTS(SELECT * FROM deleted) BEGIN
-        IF UPDATE([primary]) BEGIN
-            UPDATE a
-            SET [primary] = 0
-            FROM address a
-            JOIN inserted i ON a.client_data_id = i.client_data_id
-            JOIN deleted d ON i.id = d.id
-            WHERE 
-                i.[primary] = 1 AND ISNULL(d.[primary], 0) <> 1 -- zmiana na 1
-                AND a.id <> i.id AND a.[primary] = 1;
-        END
+
+		-- Reset (1 -> 0) others if updated is primary (1)
+		-- Only one primary per client is allowed
+		UPDATE address SET [primary] = 0
+		FROM address a
+		INNER JOIN inserted i ON a.client_data_id = i.client_data_id
+		INNER JOIN deleted d ON i.id = d.id
+		WHERE i.[primary] = 1 
+        AND d.[primary] <> 1
+        AND a.id <> i.id
+        AND a.[primary] = 1;
     END
 
-    --------------------------------------------------------------------------------
-    -- DELETE: jeśli usunięto primary = 1 → wyznacz nowy primary spośród pozostałych
-    --------------------------------------------------------------------------------
-    IF EXISTS(SELECT * FROM deleted) AND NOT EXISTS(SELECT * FROM inserted)
-    BEGIN
-        -- znajdź klientów, którym usunięto główny adres
-        DECLARE @client_data_id INT;
+	-- Delete
+    IF EXISTS(SELECT * FROM deleted) AND NOT EXISTS(SELECT * FROM inserted) BEGIN
 
-        DECLARE deleted_primary_cursor CURSOR FOR
-        SELECT DISTINCT d.client_data_id
-        FROM deleted d
-        WHERE d.[primary] = 1;
+		-- Set new primary if deleted (only Business address is alowed)
+		-- Find clients with 'primary' deleted
+        DECLARE curs1 CURSOR FOR SELECT DISTINCT client_data_id
+			FROM deleted
+			WHERE [primary] = 1;
 
-        OPEN deleted_primary_cursor;
-        FETCH NEXT FROM deleted_primary_cursor INTO @client_data_id;
+        DECLARE @currentClientDataId INT;
+		DECLARE @isBusinessExists SMALLINT = 0;
 
-        WHILE @@FETCH_STATUS = 0
-        BEGIN
-            -- wybierz najstarszy pozostały adres i oznacz go jako primary = 1
-            UPDATE address
-            SET [primary] = 1
-            WHERE id = (
-                SELECT TOP 1 id
-                FROM address
-                WHERE client_data_id = @client_data_id
-                ORDER BY id
-            );
+        OPEN curs1;
+        FETCH NEXT FROM curs1 INTO @currentClientDataId;
+        WHILE @@FETCH_STATUS = 0 BEGIN
 
-            FETCH NEXT FROM deleted_primary_cursor INTO @client_data_id;
+			SET @isBusinessExists = (
+				SELECT COUNT(*)
+				FROM address
+				WHERE client_data_id = @currentClientDataId
+				AND address_type_id = 1;
+			);
+
+			IF @isBusinessExists > 0 BEGIN
+				UPDATE address SET [primary] = 1
+				WHERE client_data_id = @currentClientDataId
+				AND address_type_id = 1;
+			END;
+			ELSE BEGIN
+				RAISERROR ('Cannot delete address due to primary. (Update / Insert address with new primary set to 1 and then delete)', 21, 1);
+			END;
+			SET @isBusinessExitst = 0;
+            FETCH NEXT FROM curs1 INTO @currentClientDataId;
         END
 
-        CLOSE deleted_primary_cursor;
-        DEALLOCATE deleted_primary_cursor;
+        CLOSE curs1;
+        DEALLOCATE curs1;
     END
 END;
