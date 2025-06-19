@@ -98,7 +98,6 @@ AS BEGIN
     DEALLOCATE curs1;
 END;
 
-EXEC updateLoyaltyRating;
 
 
 /* Financial statistics for account */
@@ -190,6 +189,4 @@ AS BEGIN
 
 END;
 
-
-EXEC getFinancialStats @inputAccountId = 4, @startDate = '2021-01-02 14:45:00.000', @endDate = '2025-05-10 15:30:00.000';
 
