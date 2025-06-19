@@ -142,5 +142,4 @@ BEGIN
     END IF;
 END;
 
--- CALL updateAccountBalance(:NEW.id);
--- CALL verifyKYC(:NEW.client_account_id);
+
