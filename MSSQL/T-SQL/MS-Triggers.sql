@@ -163,80 +163,111 @@ AS BEGIN
 END;
 
 
-
 /* Maintain primary address */
 
-CREATE TRIGGER maintainPrimaryAddress ON address
-AFTER INSERT, UPDATE, DELETE
+ALTER TRIGGER maintainPrimaryAddress ON address
+FOR INSERT, UPDATE, DELETE
 AS BEGIN
-    SET NOCOUNT ON;
 
-    DECLARE @id INT, @client_data_id INT;
-
-	-- Insert 
+	-- Insert
 	IF EXISTS(SELECT * FROM inserted) AND NOT EXISTS(SELECT * FROM deleted) BEGIN
 
-		-- Reset (1 -> 0) others if inserted is primary (1)
-		-- Only one primary per client is allowed
-		UPDATE address SET [primary] = 0
-        FROM address a
-        INNER JOIN inserted i ON a.client_data_id = i.client_data_id
-        WHERE i.[primary] = 1 
-		AND a.id <> i.id 
-		AND a.[primary] = 1;
+	    DECLARE @insCurrentId INT, @insCurrentClientDataId INT, @insCurrentAddressTypeId INT, @insCurrentIsPrimary SMALLINT;
+
+        DECLARE curs1 CURSOR FOR SELECT i.id, i.client_data_id, i.address_type_id, i.[primary]
+            FROM inserted i;
+
+        OPEN curs1;
+        FETCH NEXT FROM curs1 INTO @insCurrentId,
+            @insCurrentClientDataId, @insCurrentAddressTypeId, @insCurrentIsPrimary;
+
+        WHILE @@FETCH_STATUS = 0 BEGIN
+            IF @insCurrentIsPrimary = 1 BEGIN
+                -- Reset (1 -> 0) others if inserted is primary (1)
+		        -- Only one primary per client is allowed
+		        UPDATE address SET [primary] = 0
+                WHERE client_data_id = @insCurrentClientDataId
+                AND address_type_id = @insCurrentAddressTypeId
+                AND id <> @insCurrentId
+                AND [primary] = 1;
+            END;
+            FETCH NEXT FROM curs1 INTO @insCurrentId,
+                @insCurrentClientDataId, @insCurrentAddressTypeId, @insCurrentIsPrimary;
+        END;
+
+        CLOSE curs1;
+	    DEALLOCATE curs1;
     END;
 
 	-- Update
 	ELSE IF EXISTS(SELECT * FROM inserted) AND EXISTS(SELECT * FROM deleted) BEGIN
 
-		-- Reset (1 -> 0) others if updated is primary (1)
-		-- Only one primary per client is allowed
-		UPDATE address SET [primary] = 0
-		FROM address a
-		INNER JOIN inserted i ON a.client_data_id = i.client_data_id
-		INNER JOIN deleted d ON i.id = d.id
-		WHERE i.[primary] = 1 
-        AND d.[primary] <> 1
-        AND a.id <> i.id
-        AND a.[primary] = 1;
+	    DECLARE @updCurrentId INT, @updCurrentClientDataId INT, @updCurrentAddressTypeId INT, @updCurrentIsPrimary SMALLINT, @updCurrentWasPrimary SMALLINT;
+
+        DECLARE curs1 CURSOR FOR SELECT i.id, i.client_data_id, i.address_type_id, i.[primary], d.[primary]
+            FROM inserted i
+	        INNER JOIN deleted d ON i.id = d.id;
+
+        OPEN curs1;
+        FETCH NEXT FROM curs1 INTO @updCurrentId,
+            @updCurrentClientDataId, @updCurrentAddressTypeId, @updCurrentIsPrimary, @updCurrentWasPrimary;
+
+        WHILE @@FETCH_STATUS = 0 BEGIN
+            IF @updCurrentIsPrimary = 1 AND @updCurrentWasPrimary <> 1 BEGIN
+                -- Reset (1 -> 0) others if updated is primary (1)
+		        -- Only one primary per client is allowed
+		        UPDATE address SET [primary] = 0
+                WHERE client_data_id = @updCurrentClientDataId
+                AND address_type_id = @updCurrentAddressTypeId
+                AND id <> @updCurrentId
+                AND [primary] = 1;
+            END;
+            FETCH NEXT FROM curs1 INTO @updCurrentId,
+                @updCurrentClientDataId, @updCurrentAddressTypeId, @updCurrentIsPrimary, @updCurrentWasPrimary;
+        END;
+
+        CLOSE curs1;
+	    DEALLOCATE curs1;
     END
 
 	-- Delete
     IF EXISTS(SELECT * FROM deleted) AND NOT EXISTS(SELECT * FROM inserted) BEGIN
-
-		-- Set new primary if deleted (only Business address is alowed)
+		-- Raise error if primary deleted
 		-- Find clients with 'primary' deleted
-        DECLARE curs1 CURSOR FOR SELECT DISTINCT client_data_id
+        DECLARE curs1 CURSOR FOR SELECT DISTINCT client_data_id, address_type_id
 			FROM deleted
 			WHERE [primary] = 1;
 
-        DECLARE @currentClientDataId INT;
-		DECLARE @isBusinessExists SMALLINT = 0;
+        DECLARE @delCurrentClientDataId INT;
+		DECLARE @delCurrentAddressTypeId INT;
+		DECLARE @isTypeExists SMALLINT = 0;
 
         OPEN curs1;
-        FETCH NEXT FROM curs1 INTO @currentClientDataId;
+        FETCH NEXT FROM curs1 INTO @delCurrentClientDataId, @delCurrentAddressTypeId;
         WHILE @@FETCH_STATUS = 0 BEGIN
-
-			SET @isBusinessExists = (
-				SELECT COUNT(*)
-				FROM address
-				WHERE client_data_id = @currentClientDataId
-				AND address_type_id = 1;
-			);
-
-			IF @isBusinessExists > 0 BEGIN
-				UPDATE address SET [primary] = 1
-				WHERE client_data_id = @currentClientDataId
-				AND address_type_id = 1;
-			END;
-			ELSE BEGIN
-				RAISERROR ('Cannot delete address due to primary. (Update / Insert address with new primary set to 1 and then delete)', 21, 1);
-			END;
-			SET @isBusinessExitst = 0;
-            FETCH NEXT FROM curs1 INTO @currentClientDataId;
+            SET @isTypeExists = (
+                SELECT COUNT(*)
+                FROM address
+                WHERE client_data_id = @delCurrentClientDataId
+                AND address_type_id = @delCurrentAddressTypeId
+            );
+			IF @isTypeExists > 0 BEGIN
+                -- Set primary = 1 to other available address with same type
+                UPDATE address SET [primary] = 1
+                WHERE id = (
+                    SELECT TOP 1 id
+                    FROM address
+                    WHERE client_data_id = @delCurrentClientDataId
+                    AND address_type_id = @delCurrentAddressTypeId
+                    ORDER BY id DESC
+                );
+            END
+			SET @isTypeExists = 0;
+            FETCH NEXT FROM curs1 INTO @delCurrentClientDataId, @delCurrentAddressTypeId;
         END
 
         CLOSE curs1;
         DEALLOCATE curs1;
     END
 END;
+

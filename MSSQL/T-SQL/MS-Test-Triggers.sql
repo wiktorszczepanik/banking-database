@@ -35,3 +35,18 @@ VALUES (12, 4, -1000, -- outcoming payment / expense
     GETDATE(), SYSDATETIME(),
 	1, 'Regular payment', 1, SYSDATETIME(), '12345678901234567890123456', 3);
 
+
+
+/* Maintain primary address */
+
+/* INSERT test */
+INSERT INTO address (id, client_data_id, [primary], address_type_id, street, building_number, apartment_number, city_id, postal_code)
+VALUES (11, 2, 1, 2, 'Staszica', 5, 12, 1, '01001');
+
+/* UPDATE test */
+UPDATE address SET [primary] = 1
+WHERE id = 8;
+
+/* DELETE test */
+DELETE FROM address
+WHERE id = 10;
