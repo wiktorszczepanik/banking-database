@@ -59,12 +59,14 @@ AS
     currentAccountStatus INTEGER;
     newInputToPay INTEGER;
     newIndex INTEGER;
-    CURSOR cur1 IS SELECT account_id, SUM(amount)
-    FROM financial_log
-    WHERE amount > 0
-    AND operation_date >= TRUNC(ADD_MONTHS(SYSDATE, -1), 'MM')
-    AND operation_date < TRUNC(SYSDATE, 'MM')
-    GROUP BY account_id;
+    CURSOR cur1 IS SELECT a.id AS account_id, NVL(SUM(fl.amount), 0)
+        FROM account a
+        LEFT JOIN financial_log fl ON a.id = fl.account_id
+        AND fl.amount > 0
+        AND fl.operation_date >= TRUNC(ADD_MONTHS(SYSDATE, -1), 'MM')
+        AND fl.operation_date < TRUNC(SYSDATE, 'MM')
+        WHERE a.status_id = 1 -- Only active accounts
+        GROUP BY a.id;
 BEGIN
     -- Reversed ABS() for particular accounts to pay
     IF inputAmountToPay > 0 THEN
@@ -95,4 +97,3 @@ BEGIN
     END LOOP;
     CLOSE cur1;
 END;
-
