@@ -49,9 +49,9 @@ END;
 
 
 
-/* Inserting fee for accounts without any payments in last month */
+/* Inserting fee for accounts without negative financial activity in last month */
 
-CREATE OR REPLACE PROCEDURE accountFeeInsertion
+CREATE OR REPLACE PROCEDURE feeInsertionForAccountPaymentActivity
 (inputMaxAmount INTEGER, inputAmountToPay INTEGER)
 AS
     currentAccountId INTEGER;
@@ -97,3 +97,4 @@ BEGIN
     END LOOP;
     CLOSE cur1;
 END;
+

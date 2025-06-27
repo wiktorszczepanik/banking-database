@@ -12,10 +12,12 @@ CALL updateAccountBalance(-1);
 -- ...
 
 
-/* "accountFeeInsertion" - procedure test */
+/* "feeInsertionForAccountPaymentActivity" - procedure test */
 
-CALL accountFeeInsertion(1500, 1000);
+CALL feeInsertionForAccountPaymentActivity(1500, 1000);
 -- OUTPUT (example):
 -- [2025-06-02 01:14:09] completed in 85 ms
 -- Account affected by fee: 1 [ Fee: -1000 ]
+-- Account affected by fee: 2 [ Fee: -1000 ]
 -- ...
+

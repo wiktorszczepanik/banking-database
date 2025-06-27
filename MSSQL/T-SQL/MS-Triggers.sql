@@ -61,6 +61,9 @@ AS BEGIN
 				SET @maxFinancialLogId = @maxFinancialLogId + 1;
 				SET @newRushState = 2;
 			END;
+            ELSE IF @currentRushStatus = 1 AND @currentAmount > 0 BEGIN
+                SET @newRushState = 2;
+            END;
 
 			-- Insert financial info
 			INSERT INTO financial_log (id, account_id, amount, rush, operation_date, [timestamp], transaction_type_id,
@@ -88,8 +91,6 @@ AS BEGIN
 
 	END;
 END;
-
-
 
 /* Maintain primary address */
 
