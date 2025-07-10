@@ -1,10 +1,10 @@
 # *.sql linguist-language=SQL
-*.sql linguist-detectable=true
 # *.sql text
 
 MSSQL/*.sql linguist-generated=true
-
 Oracle/*.sql linguist-generated=true
 
 MSSQL/T-SQL/*.sql linguist-language=SQL
+MSSQL/T-SQL/*.sql linguist-detectable=true
 Oracle/PL-SQL/*.sql linguist-language=SQL
+Oracle/PL-SQL/*.sql linguist-detectable=true 
