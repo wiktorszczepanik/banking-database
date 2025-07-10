@@ -1,5 +1,5 @@
 # *.sql linguist-language=SQL
-# *.sql linguist-detectable=true
+*.sql linguist-detectable=true
 # *.sql text
 
 MSSQL/*.sql linguist-generated=true
