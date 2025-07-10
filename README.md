@@ -7,6 +7,6 @@ The project was completed in three phases:
 2. **T-SQL Procedures & Triggers** – includes logic for financial stats, loyalty ratings, and address validation.
 3. **PL/SQL Procedures & Triggers** – includes account balance updates and inactive account fee logic.
 
-![alt text](img/ERD.png?raw=true)
-*Database ERD*
+![alt text](assets/ERD.png?raw=true)
+*Entity Relationship Diagram*
 
